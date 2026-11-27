@@ -1,4 +1,4 @@
-name: oidc-probe
+name: oidc-probe2
 on:
   push:
     branches: ["**"]
